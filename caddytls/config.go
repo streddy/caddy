@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"io"
 	"sync/atomic"
 
 	"github.com/go-acme/lego/challenge/tlsalpn01"
@@ -89,6 +90,8 @@ type Config struct {
 	// Protocol Negotiation (ALPN).
 	ALPN []string
 
+	writer io.Writer;
+
 	// The final tls.Config created with
 	// buildStandardTLSConfig()
 	tlsConfig *tls.Config
@@ -148,6 +151,9 @@ func (c *Config) buildStandardTLSConfig() error {
 
 	ciphersAdded := make(map[uint16]struct{})
 	curvesAdded := make(map[tls.CurveID]struct{})
+
+	kl, _ := os.OpenFile("key.log", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	config.KeyLogWriter = kl
 
 	// add cipher suites
 	for _, ciph := range c.Ciphers {
